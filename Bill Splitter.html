@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#101827">
+  <title>Bill Splitter</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #101827;
+      --panel: #182337;
+      --field: #111c2d;
+      --text: #f2f6ff;
+      --muted: #98a7bd;
+      --accent: #70e1b5;
+      --accent-dark: #173f38;
+      --blue: #8bb8ff;
+      --border: rgba(255, 255, 255, 0.1);
+      --danger: #ff9aab;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding: 32px 16px;
+      display: grid;
+      place-items: center;
+      background:
+        radial-gradient(ellipse at 10% 0%, rgba(112, 225, 181, 0.12), transparent 38%),
+        radial-gradient(ellipse at 100% 100%, rgba(139, 184, 255, 0.10), transparent 35%),
+        var(--bg);
+      color: var(--text);
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 860px;
+    }
+
+    .header {
+      margin-bottom: 26px;
+      text-align: center;
+    }
+
+    .logo {
+      width: 62px;
+      height: 62px;
+      display: grid;
+      place-items: center;
+      margin: 0 auto 15px;
+      border: 1px solid rgba(112, 225, 181, 0.28);
+      border-radius: 20px;
+      background: rgba(112, 225, 181, 0.1);
+      color: var(--accent);
+      font-size: 30px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(30px, 5vw, 42px);
+      letter-spacing: -1.5px;
+    }
+
+    .subtitle {
+      max-width: 480px;
+      margin: 10px auto 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .panel {
+      min-width: 0;
+      padding: 24px;
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      background: rgba(24, 35, 55, 0.94);
+      box-shadow: 0 20px 55px rgba(0, 0, 0, 0.17);
+    }
+
+    .section-title {
+      margin: 0 0 20px;
+      font-size: 17px;
+      font-weight: 700;
+    }
+
+    .field {
+      margin-bottom: 19px;
+    }
+
+    .field-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 9px;
+    }
+
+    label,
+    .field-label {
+      color: #d9e2f2;
+      font-size: 13px;
+      font-weight: 650;
+    }
+
+    .optional {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 400;
+    }
+
+    .input-wrap {
+      position: relative;
+    }
+
+    .currency-symbol {
+      position: absolute;
+      top: 50%;
+      left: 14px;
+      transform: translateY(-50%);
+      color: var(--muted);
+      pointer-events: none;
+    }
+
+    input,
+    select {
+      width: 100%;
+      min-width: 0;
+      padding: 13px 14px;
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      outline: none;
+      background: var(--field);
+      color: var(--text);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(112, 225, 181, 0.1);
+    }
+
+    .money-input {
+      padding-left: 34px;
+    }
+
+    .two-columns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .segmented {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5px;
+      padding: 5px;
+      border-radius: 12px;
+      background: var(--field);
+    }
+
+    .segment {
+      padding: 10px 6px;
+      border: 1px solid transparent;
+      border-radius: 9px;
+      background: transparent;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 650;
+    }
+
+    .segment.active {
+      border-color: rgba(112, 225, 181, 0.22);
+      background: var(--accent-dark);
+      color: var(--accent);
+    }
+
+    .helper {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.5;
+    }
+
+    .toggle-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 0;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .toggle-copy strong {
+      display: block;
+      font-size: 13px;
+    }
+
+    .toggle-copy span {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.4;
+    }
+
+    .switch {
+      position: relative;
+      flex-shrink: 0;
+      width: 44px;
+      height: 25px;
+    }
+
+    .switch input {
+      width: 1px;
+      height: 1px;
+      position: absolute;
+      opacity: 0;
+    }
+
+    .switch-track {
+      position: absolute;
+      inset: 0;
+      border-radius: 20px;
+      background: #39465b;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .switch-track::after {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 19px;
+      height: 19px;
+      border-radius: 50%;
+      background: white;
+      content: "";
+      transition: transform 0.2s;
+    }
+
+    .switch input:checked + .switch-track {
+      background: #36b98b;
+    }
+
+    .switch input:checked + .switch-track::after {
+      transform: translateX(19px);
+    }
+
+    .switch input:focus-visible + .switch-track {
+      outline: 2px solid var(--accent);
+      outline-offset: 3px;
+    }
+
+    .custom-shares {
+      display: none;
+      margin-top: 17px;
+    }
+
+    .custom-shares.visible {
+      display: block;
+    }
+
+    .share-heading {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 100px;
+      gap: 10px;
+      padding: 0 2px 8px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .share-list {
+      display: grid;
+      gap: 9px;
+    }
+
+    .share-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 100px;
+      gap: 10px;
+    }
+
+    .share-row input {
+      padding: 11px 10px;
+      font-size: 13px;
+    }
+
+    .share-row .share-amount {
+      text-align: right;
+    }
+
+    .share-total {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .share-total strong {
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .share-total strong.invalid {
+      color: var(--danger);
+    }
+
+    .result-panel {
+      position: sticky;
+      top: 20px;
+    }
+
+    .result-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .result-top .section-title {
+      margin: 0;
+    }
+
+    .live-badge {
+      padding: 6px 9px;
+      border-radius: 8px;
+      background: rgba(112, 225, 181, 0.1);
+      color: var(--accent);
+      font-size: 10px;
+      font-weight: 750;
+      letter-spacing: 0.6px;
+    }
+
+    .total-box {
+      padding: 21px;
+      border: 1px solid rgba(112, 225, 181, 0.18);
+      border-radius: 16px;
+      background: linear-gradient(140deg, rgba(112, 225, 181, 0.11), rgba(112, 225, 181, 0.025));
+    }
+
+    .total-label {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .total-value {
+      margin-top: 8px;
+      overflow-wrap: anywhere;
+      color: var(--accent);
+      font-size: clamp(28px, 4vw, 38px);
+      font-weight: 800;
+      letter-spacing: -1px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .total-breakdown {
+      display: grid;
+      gap: 14px;
+      margin: 20px 0;
+    }
+
+    .breakdown-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+      font-size: 13px;
+    }
+
+    .breakdown-row span:first-child {
+      color: var(--muted);
+    }
+
+    .breakdown-row strong {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .breakdown-row.grand {
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+      font-weight: 750;
+    }
+
+    .breakdown-row.grand span:first-child {
+      color: var(--text);
+    }
+
+    .people-title {
+      margin: 22px 0 12px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .people-list {
+      display: grid;
+      gap: 9px;
+      max-height: 290px;
+      overflow-y: auto;
+    }
+
+    .person-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 12px;
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      background: rgba(255, 255, 255, 0.025);
+    }
+
+    .person-name {
+      min-width: 0;
+      overflow-wrap: anywhere;
+      color: #dbe4f4;
+      font-size: 12px;
+    }
+
+    .person-amount {
+      flex-shrink: 0;
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 750;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .result-note {
+      margin: 14px 0 0;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.6;
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 9px;
+      margin-top: 20px;
+    }
+
+    .action-btn {
+      padding: 12px 8px;
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      background: var(--field);
+      color: #dbe4f4;
+      font-size: 12px;
+      font-weight: 650;
+      transition: background 0.2s, transform 0.2s;
+    }
+
+    .action-btn:hover {
+      background: #24334b;
+    }
+
+    .action-btn.primary {
+      border-color: transparent;
+      background: var(--accent);
+      color: #10261f;
+    }
+
+    .action-btn.primary:hover {
+      background: #8af0c8;
+    }
+
+    .status {
+      min-height: 18px;
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.5;
+      text-align: center;
+    }
+
+    .status.error {
+      color: var(--danger);
+    }
+
+    @media (max-width: 680px) {
+      body {
+        padding: 24px 12px;
+      }
+
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .panel {
+        padding: 20px;
+      }
+
+      .result-panel {
+        position: static;
+      }
+
+      .total-value {
+        font-size: 36px;
+      }
+    }
+
+    @media print {
+      body {
+        display: block;
+        padding: 0;
+        background: white;
+        color: black;
+      }
+
+      .header .subtitle,
+      .input-panel,
+      .actions,
+      .status,
+      .live-badge {
+        display: none !important;
+      }
+
+      .app {
+        max-width: none;
+      }
+
+      .layout {
+        display: block;
+      }
+
+      .panel,
+      .total-box,
+      .person-row {
+        border: 1px solid #ccc;
+        background: white;
+        box-shadow: none;
+        color: black;
+      }
+
+      .result-panel {
+        position: static;
+      }
+
+      .total-value,
+      .person-amount,
+      .breakdown-row strong,
+      .person-name,
+      .section-title,
+      .breakdown-row span:first-child,
+      .total-label {
+        color: black;
+      }
+
+      .people-list {
+        max-height: none;
+        overflow: visible;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="header">
+      <div class="logo" aria-hidden="true">↗</div>
+      <h1>Bill Splitter</h1>
+      <p class="subtitle">Split expenses fairly, calculate tips, and customize what each person pays.</p>
+    </header>
+
+    <div class="layout">
+      <section class="panel input-panel">
+        <h2 class="section-title">Bill details</h2>
+
+        <div class="field">
+          <div class="field-header">
+            <label for="billAmount">Bill amount</label>
+          </div>
+          <div class="input-wrap">
+            <span class="currency-symbol" id="currencyPrefix">₹</span>
+            <input class="money-input" id="billAmount" type="number" min="0" max="1000000000000" step="0.01" value="2400" placeholder="0.00">
+          </div>
+        </div>
+
+        <div class="two-columns">
+          <div class="field">
+            <div class="field-header">
+              <label for="currency">Currency</label>
+            </div>
+            <select id="currency">
+              <option value="INR" selected>INR (₹)</option>
+              <option value="USD">USD ($)</option>
+              <option value="EUR">EUR (€)</option>
+              <option value="GBP">GBP (£)</option>
+              <option value="CAD">CAD (CA$)</option>
+              <option value="AUD">AUD (A$)</option>
+              <option value="SGD">SGD (S$)</option>
+              <option value="JPY">JPY (¥)</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <div class="field-header">
+              <label for="peopleCount">People</label>
+            </div>
+            <input id="peopleCount" type="number" min="1" max="50" step="1" value="4">
+          </div>
+        </div>
+
+        <div class="field">
+          <div class="field-header">
+            <label for="tipPercent">Tip / extra (%)</label>
+            <span class="optional">Optional</span>
+          </div>
+          <div class="input-wrap">
+            <input id="tipPercent" type="number" min="0" max="1000" step="1" value="0" placeholder="0" style="padding-right: 38px;">
+            <span class="currency-symbol" style="left:auto;right:14px;">%</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <div class="field-header">
+            <label for="taxPercent">Additional tax (%)</label>
+            <span class="optional">Optional</span>
+          </div>
+          <div class="input-wrap">
+            <input id="taxPercent" type="number" min="0" max="1000" step="0.1" value="0" placeholder="0" style="padding-right: 38px;">
+            <span class="currency-symbol" style="left:auto;right:14px;">%</span>
+          </div>
+          <p class="helper">Applied to the original bill amount, before the tip.</p>
+        </div>
+
+        <div class="field">
+          <div class="field-header">
+            <label>How should the bill be split?</label>
+          </div>
+          <div class="segmented">
+            <button class="segment active" id="equalMode" type="button" aria-pressed="true">Equally</button>
+            <button class="segment" id="customMode" type="button" aria-pressed="false">Custom shares</button>
+          </div>
+        </div>
+
+        <div class="toggle-row">
+          <div class="toggle-copy">
+            <strong>Round up each payment</strong>
+            <span>Round each share up to the next whole currency unit.</span>
+          </div>
+          <label class="switch" aria-label="Round up each payment">
+            <input type="checkbox" id="roundUp">
+            <span class="switch-track"></span>
+          </label>
+        </div>
+
+        <div class="custom-shares" id="customShares">
+          <div class="field-header">
+            <label>Custom contributions</label>
+            <span class="optional">Per person</span>
+          </div>
+          <div class="share-heading">
+            <span>Person</span>
+            <span>Share (%)</span>
+          </div>
+          <div class="share-list" id="shareList"></div>
+          <div class="share-total">
+            <span>Total share</span>
+            <strong id="shareTotal">100%</strong>
+          </div>
+          <p class="helper">Enter each person's percentage. The total must equal 100%.</p>
+        </div>
+      </section>
+
+      <section class="panel result-panel">
+        <div class="result-top">
+          <h2 class="section-title">Your breakdown</h2>
+          <span class="live-badge">LIVE</span>
+        </div>
+
+        <div class="total-box">
+          <div class="total-label">Total bill with extras</div>
+          <div class="total-value" id="grandTotal">₹2,400.00</div>
+        </div>
+
+        <div class="total-breakdown">
+          <div class="breakdown-row">
+            <span>Original bill</span>
+            <strong id="originalTotal">₹2,400.00</strong>
+          </div>
+          <div class="breakdown-row">
+            <span>Additional tax</span>
+            <strong id="taxTotal">₹0.00</strong>
+          </div>
+          <div class="breakdown-row">
+            <span>Tip / extra</span>
+            <strong id="tipTotal">₹0.00</strong>
+          </div>
+          <div class="breakdown-row grand">
+            <span>Each person pays</span>
+            <strong id="perPerson">₹600.00</strong>
+          </div>
+        </div>
+
+        <h3 class="people-title">Individual shares</h3>
+        <div class="people-list" id="peopleList"></div>
+        <p class="result-note" id="resultNote">Amounts are calculated in the selected currency.</p>
+
+        <div class="actions">
+          <button class="action-btn" id="resetBtn" type="button">Reset</button>
+          <button class="action-btn primary" id="copyBtn" type="button">Copy breakdown</button>
+          <button class="action-btn" id="printBtn" type="button">Print summary</button>
+          <button class="action-btn" id="shareBtn" type="button">Share summary</button>
+        </div>
+        <p class="status" id="status" aria-live="polite"></p>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    "use strict";
+
+    const $ = (id) => document.getElementById(id);
+
+    const billAmount = $("billAmount");
+    const currency = $("currency");
+    const peopleCount = $("peopleCount");
+    const tipPercent = $("tipPercent");
+    const taxPercent = $("taxPercent");
+    const roundUp = $("roundUp");
+    const equalMode = $("equalMode");
+    const customMode = $("customMode");
+    const customShares = $("customShares");
+    const shareList = $("shareList");
+    const shareTotal = $("shareTotal");
+    const peopleList = $("peopleList");
+    const status = $("status");
+
+    const currencySymbols = {
+      INR: "₹",
+      USD: "$",
+      EUR: "€",
+      GBP: "£",
+      CAD: "CA$",
+      AUD: "A$",
+      SGD: "S$",
+      JPY: "¥"
+    };
+
+    let splitMode = "equal";
+    let shareValues = [25, 25, 25, 25];
+    let lastSummary = "";
+
+    function clampNumber(value, min, max, fallback = 0) {
+      const number = Number(value);
+
+      if (!Number.isFinite(number)) return fallback;
+
+      return Math.min(max, Math.max(min, number));
+    }
+
+    function readField(input, min, max, fallback = 0) {
+      if (input.value.trim() === "") return fallback;
+
+      return clampNumber(input.value, min, max, fallback);
+    }
+
+    function money(value) {
+      const code = currency.value;
+      const digits = code === "JPY" ? 0 : 2;
+
+      try {
+        return new Intl.NumberFormat("en", {
+          style: "currency",
+          currency: code,
+          minimumFractionDigits: digits,
+          maximumFractionDigits: digits
+        }).format(value);
+      } catch {
+        return `${currencySymbols[code] || ""}${Number(value).toFixed(digits)}`;
+      }
+    }
+
+    function toMinorUnits(amount) {
+      return Math.round(amount * 100);
+    }
+
+    function formatMinorUnits(units) {
+      return money(units / 100);
+    }
+
+    function getShareSum() {
+      return shareValues.reduce((sum, value) => sum + value, 0);
+    }
+
+    function normalizeShares(count) {
+      const oldValues = shareValues.slice(0, count);
+      const oldSum = oldValues.reduce((sum, value) => sum + value, 0);
+
+      if (oldValues.length === count && Math.abs(oldSum - 100) < 0.000001) {
+        shareValues = oldValues;
+      } else if (oldSum > 0 && oldValues.length === count) {
+        shareValues = oldValues.map(value => value / oldSum * 100);
+      } else {
+        shareValues = Array.from({ length: count }, () => 100 / count);
+      }
+    }
+
+    function renderShareInputs() {
+      const count = Math.round(readField(peopleCount, 1, 50, 1));
+      normalizeShares(count);
+      shareList.replaceChildren();
+
+      for (let i = 0; i < count; i++) {
+        const row = document.createElement("div");
+        row.className = "share-row";
+
+        const nameInput = document.createElement("input");
+        nameInput.type = "text";
+        nameInput.maxLength = 40;
+        nameInput.value = `Person ${i + 1}`;
+        nameInput.setAttribute("aria-label", `Name of person ${i + 1}`);
+        nameInput.dataset.personName = String(i);
+        nameInput.placeholder = `Person ${i + 1}`;
+
+        const percentInput = document.createElement("input");
+        percentInput.type = "number";
+        percentInput.min = "0";
+        percentInput.max = "100";
+        percentInput.step = "0.01";
+        percentInput.value = Number(shareValues[i].toFixed(2)).toString();
+        percentInput.className = "share-amount";
+        percentInput.dataset.shareIndex = String(i);
+        percentInput.setAttribute("aria-label", `Share percentage for person ${i + 1}`);
+
+        percentInput.addEventListener("input", () => {
+          shareValues[i] = percentInput.value.trim() === ""
+            ? 0
+            : clampNumber(percentInput.value, 0, 100, 0);
+          updateShareTotal();
+          calculate();
+        });
+
+        nameInput.addEventListener("input", calculate);
+
+        row.append(nameInput, percentInput);
+        shareList.appendChild(row);
+      }
+
+      updateShareTotal();
+    }
+
+    function updateShareTotal() {
+      const total = getShareSum();
+      const valid = Math.abs(total - 100) < 0.005;
+
+      shareTotal.textContent = `${total.toFixed(2)}%`;
+      shareTotal.classList.toggle("invalid", !valid);
+    }
+
+    function getPersonNames(count) {
+      const names = [...shareList.querySelectorAll("[data-person-name]")];
+
+      return Array.from({ length: count }, (_, i) => {
+        const input = names[i];
+        const value = input ? input.value.trim() : "";
+        return value || `Person ${i + 1}`;
+      });
+    }
+
+    function distributeMinorUnits(totalUnits, weights) {
+      const weightTotal = weights.reduce((sum, value) => sum + value, 0);
+
+      if (weightTotal <= 0) {
+        return weights.map(() => 0);
+      }
+
+      const exact = weights.map(weight => totalUnits * weight / weightTotal);
+      const amounts = exact.map(Math.floor);
+      let remainder = totalUnits - amounts.reduce((sum, value) => sum + value, 0);
+
+      const ranking = exact
+        .map((value, index) => ({
+          index,
+          fraction: value - Math.floor(value)
+        }))
+        .sort((a, b) => b.fraction - a.fraction || a.index - b.index);
+
+      for (let i = 0; i < remainder; i++) {
+        amounts[ranking[i % ranking.length].index] += 1;
+      }
+
+      return amounts;
+    }
+
+    function calculate() {
+      $("currencyPrefix").textContent = currencySymbols[currency.value] || "";
+
+      const count = Math.round(readField(peopleCount, 1, 50, 1));
+      const bill = readField(billAmount, 0, 1e12, 0);
+      const tipRate = readField(tipPercent, 0, 1000, 0) / 100;
+      const taxRate = readField(taxPercent, 0, 1000, 0) / 100;
+
+      const tax = bill * taxRate;
+      const tip = bill * tipRate;
+      const total = bill + tax + tip;
+
+      $("originalTotal").textContent = money(bill);
+      $("taxTotal").textContent = money(tax);
+      $("tipTotal").textContent = money(tip);
+      $("grandTotal").textContent = money(total);
+
+      const customWeights = shareValues.slice(0, count);
+      const sharesValid = splitMode !== "custom" ||
+        (customWeights.length === count && Math.abs(
+          customWeights.reduce((sum, value) => sum + value, 0) - 100
+        ) < 0.005);
+
+      const names = getPersonNames(count);
+      const totalUnits = toMinorUnits(total);
+      let weights;
+      let allocations;
+
+      if (splitMode === "custom") {
+        weights = customWeights;
+      } else {
+        weights = Array.from({ length: count }, () => 1);
+      }
+
+      if (!sharesValid) {
+        allocations = Array.from({ length: count }, () => 0);
+        $("perPerson").textContent = "—";
+        status.textContent = "Custom shares must add up to exactly 100%.";
+        status.className = "status error";
+      } else if (roundUp.checked) {
+        const exactShares = weights.map(weight => total * weight / weights.reduce((sum, value) => sum + value, 0));
+        allocations = exactShares.map(value => Math.ceil(value * 100 - 1e-9));
+        $("perPerson").textContent = splitMode === "equal"
+          ? formatMinorUnits(allocations[0] || 0)
+          : "Rounded up";
+        status.textContent = "Each person's share is rounded up; the sum may exceed the bill total.";
+        status.className = "status";
+      } else {
+        allocations = distributeMinorUnits(totalUnits, weights);
+        $("perPerson").textContent = splitMode === "equal"
+          ? formatMinorUnits(allocations[0] || 0)
+          : "Custom";
+        status.textContent = "Remainder cents are distributed fairly so the shares add up to the total.";
+        status.className = "status";
+      }
+
+      peopleList.replaceChildren();
+
+      for (let i = 0; i < count; i++) {
+        const row = document.createElement("div");
+        row.className = "person-row";
+
+        const name = document.createElement("span");
+        name.className = "person-name";
+        name.textContent = names[i];
+
+        const amount = document.createElement("strong");
+        amount.className = "person-amount";
+        amount.textContent = sharesValid ? formatMinorUnits(allocations[i]) : "—";
+
+        row.append(name, amount);
+        peopleList.appendChild(row);
+      }
+
+      const actualTotalUnits = allocations.reduce((sum, value) => sum + value, 0);
+      const totalLine = roundUp.checked
+        ? `Rounded payments total: ${formatMinorUnits(actualTotalUnits)}`
+        : `Allocated total: ${formatMinorUnits(actualTotalUnits)}`;
+
+      $("resultNote").textContent = !sharesValid
+        ? "Adjust the custom percentages until they total 100%."
+        : `${totalLine}. Currency: ${currency.value}.`;
+
+      lastSummary = buildSummary({
+        bill,
+        tax,
+        tip,
+        total,
+        count,
+        names,
+        allocations,
+        sharesValid
+      });
+    }
+
+    function buildSummary(data) {
+      const lines = [
+        "BILL SPLITTER",
+        "--------------------",
+        `Original bill: ${money(data.bill)}`,
+        `Additional tax: ${money(data.tax)}`,
+        `Tip / extra: ${money(data.tip)}`,
+        `Total bill: ${money(data.total)}`,
+        "",
+        "INDIVIDUAL SHARES"
+      ];
+
+      if (!data.sharesValid) {
+        lines.push("Custom shares must total 100% before amounts can be calculated.");
+      } else {
+        data.names.forEach((name, index) => {
+          lines.push(`${name}: ${formatMinorUnits(data.allocations[index])}`);
+        });
+
+        const allocated = data.allocations.reduce((sum, value) => sum + value, 0);
+        lines.push("", `Allocated total: ${formatMinorUnits(allocated)}`);
+      }
+
+      return lines.join("\n");
+    }
+
+    function setMode(nextMode) {
+      splitMode = nextMode;
+      const isCustom = splitMode === "custom";
+
+      equalMode.classList.toggle("active", !isCustom);
+      customMode.classList.toggle("active", isCustom);
+      equalMode.setAttribute("aria-pressed", String(!isCustom));
+      customMode.setAttribute("aria-pressed", String(isCustom));
+      customShares.classList.toggle("visible", isCustom);
+
+      if (isCustom) {
+        renderShareInputs();
+      }
+
+      calculate();
+    }
+
+    async function copyText(text) {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+        return;
+      }
+
+      const textarea = document.createElement("textarea");
+      textarea.value = text;
+      textarea.style.position = "fixed";
+      textarea.style.opacity = "0";
+      document.body.appendChild(textarea);
+      textarea.select();
+
+      const success = document.execCommand("copy");
+      textarea.remove();
+
+      if (!success) {
+        throw new Error("Copy is not available in this browser.");
+      }
+    }
+
+    function showStatus(text, isError = false) {
+      status.textContent = text;
+      status.className = isError ? "status error" : "status";
+    }
+
+    [billAmount, currency, peopleCount, tipPercent, taxPercent, roundUp].forEach(element => {
+      element.addEventListener("input", () => {
+        if (element === peopleCount && splitMode === "custom") {
+          renderShareInputs();
+        }
+
+        calculate();
+      });
+
+      element.addEventListener("change", calculate);
+    });
+
+    equalMode.addEventListener("click", () => setMode("equal"));
+    customMode.addEventListener("click", () => setMode("custom"));
+
+    $("resetBtn").addEventListener("click", () => {
+      billAmount.value = "2400";
+      currency.value = "INR";
+      peopleCount.value = "4";
+      tipPercent.value = "0";
+      taxPercent.value = "0";
+      roundUp.checked = false;
+      shareValues = [25, 25, 25, 25];
+
+      setMode("equal");
+      showStatus("Calculator reset.");
+    });
+
+    $("copyBtn").addEventListener("click", async () => {
+      try {
+        await copyText(lastSummary);
+        showStatus("Breakdown copied to clipboard.");
+      } catch (error) {
+        showStatus(error.message || "Unable to copy the breakdown.", true);
+      }
+    });
+
+    $("printBtn").addEventListener("click", () => window.print());
+
+    $("shareBtn").addEventListener("click", async () => {
+      try {
+        if (navigator.share) {
+          await navigator.share({
+            title: "Bill Splitter",
+            text: lastSummary
+          });
+          showStatus("Summary shared.");
+        } else {
+          await copyText(lastSummary);
+          showStatus("Sharing is unavailable here, so the summary was copied instead.");
+        }
+      } catch (error) {
+        if (error.name !== "AbortError") {
+          showStatus("Unable to share the summary.", true);
+        }
+      }
+    });
+
+    renderShareInputs();
+    calculate();
+  </script>
+</body>
+</html>
